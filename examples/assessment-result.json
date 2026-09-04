@@ -1,0 +1,91 @@
+{
+  "item_name": "巧克力",
+  "normalized_item": "巧克力",
+  "species": "狗",
+  "risk_level": "紧急",
+  "confidence": 96,
+  "evidence_level": "verified_local",
+  "item_category": "本地知识条目",
+  "scores": {
+    "food": 5,
+    "poison": 98,
+    "toy": 0,
+    "hazard": 85,
+    "interest": 75
+  },
+  "tags": ["禁止食用", "剂量与种类相关", "误食需尽快处理"],
+  "direct_conclusion": "不要给狗吃；若已经误食，应尽快联系兽医并说明巧克力种类、摄入量、时间和体重。",
+  "quick_summary": "不要给狗吃；若已经误食，应尽快联系兽医并说明巧克力种类、摄入量、时间和体重。",
+  "detailed_explanation": "巧克力中的甲基黄嘌呤类成分可能引起呕吐、躁动、心率异常、高热和抽搐。黑巧和烘焙巧克力通常风险更高，但任何类型都不应当作宠物食品。",
+  "exceptions": ["风险取决于巧克力种类、摄入量和狗的体重，不能仅凭‘只吃了一点’判断安全。"],
+  "recommended_actions": ["保存包装并估算摄入量。", "不要自行催吐，先联系兽医或动物中毒咨询。"],
+  "emergency_signs": ["反复呕吐", "明显躁动或颤抖", "心跳异常", "抽搐"],
+  "sources": [
+    {
+      "title": "Merck Veterinary Manual: Chocolate Toxicosis",
+      "url": "https://www.merckvetmanual.com/toxicology/food-hazards/chocolate-toxicosis-in-animals",
+      "snippet": "巧克力中毒可影响心血管和中枢神经系统。",
+      "source_type": "本地知识库"
+    }
+  ],
+  "disclaimer": "结果用于风险筛查，不能替代兽医诊断；若已误食或出现异常，应立即联系兽医。",
+  "analysis_error": "",
+  "claims": [
+    {
+      "claim_id": "CLAIM:DB:07422dedec12:1",
+      "text": "不要给狗吃；若已经误食，应尽快联系兽医并说明巧克力种类、摄入量、时间和体重。",
+      "claim_type": "conclusion",
+      "confidence": 0.96,
+      "severity": "紧急",
+      "evidence_ids": ["DB:07422dedec12:1"]
+    },
+    {
+      "claim_id": "CLAIM:DB:07422dedec12:2",
+      "text": "巧克力中的甲基黄嘌呤类成分可能引起呕吐、躁动、心率异常、高热和抽搐。黑巧和烘焙巧克力通常风险更高，但任何类型都不应当作宠物食品。",
+      "claim_type": "detail",
+      "confidence": 0.96,
+      "severity": "紧急",
+      "evidence_ids": ["DB:07422dedec12:2"]
+    },
+    {
+      "claim_id": "CLAIM:DB:07422dedec12:3",
+      "text": "风险取决于巧克力种类、摄入量和狗的体重，不能仅凭‘只吃了一点’判断安全。",
+      "claim_type": "exception",
+      "confidence": 0.96,
+      "severity": "紧急",
+      "evidence_ids": ["DB:07422dedec12:3"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "DB:07422dedec12:1",
+      "source_type": "verified_database",
+      "organization": "PetLens",
+      "title": "Merck Veterinary Manual: Chocolate Toxicosis",
+      "url": "",
+      "model": "",
+      "retrieved_at": "",
+      "supports": ["CLAIM:DB:07422dedec12:1"]
+    },
+    {
+      "evidence_id": "DB:07422dedec12:2",
+      "source_type": "verified_database",
+      "organization": "PetLens",
+      "title": "Merck Veterinary Manual: Chocolate Toxicosis",
+      "url": "",
+      "model": "",
+      "retrieved_at": "",
+      "supports": ["CLAIM:DB:07422dedec12:2"]
+    },
+    {
+      "evidence_id": "DB:07422dedec12:3",
+      "source_type": "verified_database",
+      "organization": "PetLens",
+      "title": "Merck Veterinary Manual: Chocolate Toxicosis",
+      "url": "",
+      "model": "",
+      "retrieved_at": "",
+      "supports": ["CLAIM:DB:07422dedec12:3"]
+    }
+  ]
+}
