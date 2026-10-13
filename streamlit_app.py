@@ -13,11 +13,59 @@ from app.pipeline import evaluate_item
 from app.providers import QwenVisionProvider, VisionError, VisionResult
 from app.providers.vision_base import image_fingerprint, recognize_once
 from app.storage import init_db, list_history, save_result
+from app.ui.history import render_history
+from app.ui.home import render_home
+from app.ui.profile import render_profile
 
 load_dotenv()
 init_db()
 
-st.set_page_config(page_title="PetLens 宠物视角", page_icon="🐾", layout="centered")
+st.set_page_config(page_title="PetLens / 小猫的家", page_icon="🐾", layout="centered")
+
+
+def navigate(page: str) -> None:
+    st.session_state["page"] = page
+    st.rerun()
+
+
+if "page" not in st.session_state:
+    st.session_state["page"] = "home"
+
+current_page = st.session_state["page"]
+if current_page == "home":
+    render_home(navigate)
+    st.stop()
+if current_page == "profile":
+    render_profile(navigate)
+    st.stop()
+if current_page == "history":
+    render_history(navigate)
+    st.stop()
+if current_page != "query":
+    st.session_state["page"] = "home"
+    st.rerun()
+
+def continue_query() -> None:
+    """Clear only transient query UI state while preserving vision cache and history."""
+    for key in (
+        "latest_result",
+        "current_vision_result",
+        "current_vision_fingerprint",
+        "recognized_name_input",
+        "query_item_input",
+        "camera_input",
+        "upload_input",
+        "vision_error",
+    ):
+        st.session_state.pop(key, None)
+    st.session_state["page"] = "query"
+    st.rerun()
+
+
+if "latest_result" not in st.session_state:
+    if st.button("← 返回小猫的家", key="query_back_top"):
+        navigate("home")
+
 st.markdown("""
 <style>
 .block-container {max-width: 760px; padding-top: 1.2rem; padding-bottom: 4rem;}
@@ -52,6 +100,7 @@ profile = PetProfile(
     weight_kg=weight if weight and weight > 0 else None,
     notes=notes,
 )
+st.session_state["pet_profile"] = profile.model_dump()
 
 def recognize_uploaded_image(uploaded_file, button_prefix: str) -> None:
     image_bytes = uploaded_file.getvalue()
@@ -82,13 +131,13 @@ def recognize_uploaded_image(uploaded_file, button_prefix: str) -> None:
 query_item = ""
 input_tab, camera_tab, upload_tab = st.tabs(["⌨️ 输入名称", "📷 直接拍照", "🖼️ 上传图片"])
 with input_tab:
-    query_item = st.text_input("输入物品", placeholder="例如：葡萄、百合、毛线、巧克力")
+    query_item = st.text_input("输入物品", placeholder="例如：葡萄、百合、毛线、巧克力", key="query_item_input")
 with camera_tab:
-    camera_file = st.camera_input("拍下要查询的物品")
+    camera_file = st.camera_input("拍下要查询的物品", key="camera_input")
     if camera_file:
         recognize_uploaded_image(camera_file, "camera")
 with upload_tab:
-    upload_file = st.file_uploader("上传物品照片", type=["jpg", "jpeg", "png", "webp"])
+    upload_file = st.file_uploader("上传物品照片", type=["jpg", "jpeg", "png", "webp"], key="upload_input")
     if upload_file:
         st.image(upload_file, use_container_width=True)
         recognize_uploaded_image(upload_file, "upload")
@@ -193,6 +242,14 @@ if "latest_result" in st.session_state:
                            mime="application/json", use_container_width=True)
 
     st.caption(result.disclaimer)
+
+    result_home, result_continue = st.columns(2)
+    with result_home:
+        if st.button("返回小猫的家", key="result_back_home", use_container_width=True):
+            navigate("home")
+    with result_continue:
+        if st.button("继续查询", key="result_continue", use_container_width=True):
+            continue_query()
 
 st.divider()
 with st.expander("最近查询"):
