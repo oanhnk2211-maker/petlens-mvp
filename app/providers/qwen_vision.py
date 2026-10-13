@@ -13,7 +13,7 @@ from app.providers.vision_base import VisionError, VisionProvider, VisionResult
 logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-DEFAULT_MODEL = "qwen3-vl-flash"
+DEFAULT_MODEL = "qwen3-vl-plus"
 SUPPORTED_MEDIA_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 VISION_PROMPT = """识别图片中最主要、最可能被用户查询的一个物品。你只负责识别物品，禁止输出任何宠物安全结论。
@@ -38,18 +38,53 @@ def image_to_data_url(image_bytes: bytes, media_type: str) -> str:
     return f"data:{normalized};base64,{encoded}"
 
 
+def _string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
+def _normalize_vision_payload(value: dict[str, Any]) -> dict[str, Any]:
+    nested = value.get("result") or value.get("data")
+    if isinstance(nested, dict):
+        value = nested
+    item_name = value.get("item_name") or value.get("recognized_item") or value.get("name")
+    normalized_name = value.get("normalized_name") or value.get("normalized_item") or item_name
+    confidence = value.get("confidence", 0.0)
+    try:
+        confidence = float(confidence)
+    except (TypeError, ValueError):
+        confidence = 0.0
+    if 10 <= confidence <= 100:
+        confidence /= 100
+    return {
+        "item_name": item_name or "",
+        "normalized_name": normalized_name or "",
+        "visible_text": _string_list(value.get("visible_text")),
+        "candidate_names": _string_list(value.get("candidate_names")),
+        "confidence": confidence,
+        "description": str(value.get("description") or ""),
+        "uncertainty": str(value.get("uncertainty") or ""),
+    }
+
+
 def parse_vision_result(text: str) -> VisionResult:
     decoder = json.JSONDecoder()
     candidates = [text.strip()]
-    if "```" in text:
-        parts = text.split("```")
+    marker = chr(96) * 3
+    if marker in text:
+        parts = text.split(marker)
         candidates.extend(part[4:].strip() if part.lstrip().startswith("json") else part.strip() for part in parts[1::2])
     candidates.extend(text[index:] for index, char in enumerate(text) if char == "{")
     for candidate in candidates:
         try:
             value, _ = decoder.raw_decode(candidate.lstrip())
             if isinstance(value, dict):
-                return VisionResult.model_validate(value)
+                return VisionResult.model_validate(_normalize_vision_payload(value))
         except (json.JSONDecodeError, ValidationError, ValueError, TypeError):
             continue
     raise VisionError("模型返回格式错误，请重新识别或手动输入名称。")
@@ -83,6 +118,7 @@ class QwenVisionProvider(VisionProvider):
                 messages=messages,
                 temperature=0,
                 max_tokens=700,
+                extra_body={"enable_thinking": False},
             )
             return self._message_text(response)
         except VisionError:

@@ -145,19 +145,27 @@ def recognize_uploaded_image(uploaded_file, button_prefix: str) -> None:
         st.session_state["current_vision_fingerprint"] = fingerprint
 
 
-query_item = ""
-input_tab, camera_tab, upload_tab = st.tabs(["⌨️ 输入对象", "📷 拍下现场", "🖼️ 附上图片"])
-with input_tab:
-    query_item = st.text_input("输入要分析的对象", placeholder="例如：葡萄、百合、毛线、巧克力", key="query_item_input")
-with camera_tab:
-    camera_file = st.camera_input("拍下这次发现的对象", key="camera_input")
-    if camera_file:
-        recognize_uploaded_image(camera_file, "camera")
-with upload_tab:
-    upload_file = st.file_uploader("附上一张相关图片", type=["jpg", "jpeg", "png", "webp"], key="upload_input")
-    if upload_file:
-        st.image(upload_file, use_container_width=True)
-        recognize_uploaded_image(upload_file, "upload")
+query_item = st.text_input(
+    "输入要分析的对象（可选）",
+    placeholder="例如：葡萄、百合、毛线、巧克力",
+    key="query_item_input",
+)
+with st.expander("＋ 添加图片（可选）", expanded=False):
+    st.caption("图片作为本次事件的辅助材料，可选择文件或现场拍摄。")
+    upload_tab, camera_tab = st.tabs(["选择文件", "现场拍摄"])
+    with upload_tab:
+        upload_file = st.file_uploader(
+            "选择一张相关图片",
+            type=["jpg", "jpeg", "png", "webp"],
+            key="upload_input",
+        )
+        if upload_file:
+            st.image(upload_file, use_container_width=True)
+            recognize_uploaded_image(upload_file, "upload")
+    with camera_tab:
+        camera_file = st.camera_input("拍下这次发现的对象", key="camera_input")
+        if camera_file:
+            recognize_uploaded_image(camera_file, "camera")
 
 if st.session_state.get("vision_error"):
     st.error(st.session_state["vision_error"])
@@ -182,19 +190,23 @@ if recognized_data:
 if species not in ["猫", "狗"]:
     st.warning("当前高可信本地资料先覆盖猫和狗；其他物种可以运行，但会更多依赖一般性推断并降低置信度。")
 
-if query_item.strip():
+submitted_subject = query_item.strip() or event_note.strip()
+if not query_item.strip() and event_note.strip():
+    st.caption("未单独填写分析对象，本次将使用事件描述进入当前分析流程。")
+
+if submitted_subject:
     with st.container(border=True):
         st.markdown("#### 提交前确认")
         st.write("**事件类型：** 物品事件")
-        st.write(f"**分析对象：** {query_item.strip()}")
+        st.write(f"**分析对象/事件内容：** {submitted_subject}")
         if event_note.strip():
             st.write(f"**事件描述：** {event_note.strip()}")
         if event_question.strip():
             st.write(f"**关注问题：** {event_question.strip()}")
 
 analysis_label = "提交事件并分析"
-if st.button(analysis_label, type="primary", use_container_width=True, disabled=not bool(query_item.strip())):
-    final_item = query_item.strip()
+if st.button(analysis_label, type="primary", use_container_width=True, disabled=not bool(submitted_subject)):
+    final_item = submitted_subject
     vision_for_analysis = VisionResult.model_validate(recognized_data) if recognized_data else None
     with st.spinner("正在结合宠物画像和知识库分析……"):
         result = evaluate_item(final_item, profile, vision_result=vision_for_analysis,
