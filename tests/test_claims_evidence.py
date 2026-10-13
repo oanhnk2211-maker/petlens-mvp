@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.export import export_json
-from app.models import AnalysisResult, EvidenceRef, PetProfile, SafetyResult
+from app.models import AnalysisResult, EvidenceRef, HistoryEvent, PetProfile, SafetyResult
 from app.pipeline import evaluate_item
 from app.providers.mock_text import MockTextProvider
 from app.providers.vision_base import VisionResult
@@ -111,6 +111,62 @@ def test_history_reads_new_and_old_structures(tmp_path, monkeypatch):
     storage.save_result(current, PetProfile())
     rows = storage.load_history()
     assert len(rows) == 2 and all(row[0].claims for row in rows)
+
+
+def test_legacy_history_is_available_as_object_events(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "DB_PATH", tmp_path / "history.db")
+    storage.init_db()
+    old = old_safety()
+    import sqlite3
+    with sqlite3.connect(storage.DB_PATH) as conn:
+        conn.execute("INSERT INTO history(created_at,item_name,species,risk_level,confidence,result_json,profile_json) VALUES(?,?,?,?,?,?,?)",
+                     ("now", "纸箱", "猫", "谨慎", 70, json.dumps(old, ensure_ascii=False), PetProfile().model_dump_json()))
+
+    events = storage.load_event_history()
+
+    assert len(events) == 1
+    event = events[0]
+    assert isinstance(event, HistoryEvent)
+    assert event.event_id == "history:1"
+    assert event.event_type == "object"
+    assert event.event_schema_version == 0
+    assert event.is_legacy is True
+    assert event.item_name == "纸箱"
+    assert event.result.quick_summary == "留意胶带"
+    assert event.profile.species == "猫"
+
+
+def test_new_object_event_persists_metadata_and_legacy_rows_remain_readable(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage, "DB_PATH", tmp_path / "history.db")
+    storage.init_db()
+    result = SafetyResult.model_validate(old_safety())
+
+    saved = storage.save_event(
+        result,
+        PetProfile(),
+        input_text="麻辣蛤",
+        event_note="猫刚刚可能碰到了包装里的食物。",
+        question="这次接触需要担心吗？",
+        recognized_item="海鲜罐头",
+        final_item="麻辣蛤",
+        user_corrected=True,
+        image_attached=True,
+    )
+
+    events = storage.load_event_history()
+
+    assert len(events) == 1
+    event = events[0]
+    assert event.event_id == saved.event_id
+    assert event.event_schema_version == 1
+    assert event.is_legacy is False
+    assert event.event_type == "object"
+    assert event.event_note == "猫刚刚可能碰到了包装里的食物。"
+    assert event.question == "这次接触需要担心吗？"
+    assert event.recognized_item == "海鲜罐头"
+    assert event.final_item == "麻辣蛤"
+    assert event.user_corrected is True
+    assert event.image_attached is True
 
 
 def test_json_export_removes_secrets_and_base64():
