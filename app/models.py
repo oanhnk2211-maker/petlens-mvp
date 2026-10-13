@@ -166,3 +166,32 @@ class SafetyResult(BaseModel):
     def validate_graph(self):
         _validate_evidence_graph(self.claims, self.evidence)
         return self
+
+
+class HistoryEvent(BaseModel):
+    """A stable event-shaped view over a saved result.
+
+    Existing rows predate the event model, so the compatibility reader marks
+    them as object events with schema version 0 and keeps the original result
+    and profile intact. Future event submissions can use the same envelope
+    without rewriting the existing SQLite rows.
+    """
+
+    event_id: str
+    event_type: str = "object"
+    event_schema_version: int = 0
+    is_legacy: bool = True
+    created_at: str
+    item_name: str
+    species: Species
+    risk_level: str
+    confidence: int = Field(ge=0, le=100)
+    input_text: str = ""
+    event_note: str = ""
+    question: str = ""
+    recognized_item: str = ""
+    final_item: str = ""
+    user_corrected: bool = False
+    image_attached: bool = False
+    result: SafetyResult
+    profile: PetProfile

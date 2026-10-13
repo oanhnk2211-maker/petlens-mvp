@@ -12,7 +12,7 @@ from app.models import PetProfile
 from app.pipeline import evaluate_item
 from app.providers import QwenVisionProvider, VisionError, VisionResult
 from app.providers.vision_base import image_fingerprint, recognize_once
-from app.storage import init_db, list_history, save_result
+from app.storage import init_db, list_history, save_event
 from app.ui.history import render_history
 from app.ui.home import render_home
 from app.ui.profile import render_profile
@@ -49,10 +49,13 @@ def continue_query() -> None:
     """Clear only transient query UI state while preserving vision cache and history."""
     for key in (
         "latest_result",
+        "latest_event",
         "current_vision_result",
         "current_vision_fingerprint",
         "recognized_name_input",
         "query_item_input",
+        "event_note_input",
+        "event_question_input",
         "camera_input",
         "upload_input",
         "vision_error",
@@ -75,13 +78,27 @@ st.markdown("""
 .risk-card {padding: 1rem 1.1rem; border: 1px solid rgba(120,120,120,.25); border-radius: 18px; margin: .5rem 0 1rem 0;}
 .small-note {font-size: .86rem; opacity: .72;}
 </style>
-<div class="hero"><h1>🐾 PetLens</h1><p>从宠物视角判断：能吃吗、有毒吗、能玩吗、危险吗、会感兴趣吗？</p></div>
+<div class="hero"><h1>🐾 PetLens</h1><p>记录宠物身边的新情况，再结合宠物画像给出下一步判断。</p></div>
 """, unsafe_allow_html=True)
 
 status_bits = []
 status_bits.append("百炼图片识别已配置" if os.getenv("DASHSCOPE_API_KEY") else "图片识别未配置（可手动输入）")
 status_bits.append("百炼文本分析已配置" if os.getenv("DASHSCOPE_API_KEY") else "本地知识库模式")
 st.caption(" · ".join(status_bits))
+
+st.subheader("记录新情况")
+st.caption("当前支持物品事件：先识别或输入对象，再结合宠物画像进行安全分析。")
+event_note = st.text_area(
+    "这次发生了什么？（可选）",
+    placeholder="例如：猫刚刚可能接触到了这个东西。",
+    key="event_note_input",
+    height=80,
+)
+event_question = st.text_input(
+    "这次想确认什么？（可选）",
+    value="这个对象对我的宠物有风险吗？",
+    key="event_question_input",
+)
 
 with st.expander("宠物画像", expanded=True):
     c1, c2 = st.columns(2)
@@ -129,29 +146,29 @@ def recognize_uploaded_image(uploaded_file, button_prefix: str) -> None:
 
 
 query_item = ""
-input_tab, camera_tab, upload_tab = st.tabs(["⌨️ 输入名称", "📷 直接拍照", "🖼️ 上传图片"])
+input_tab, camera_tab, upload_tab = st.tabs(["⌨️ 输入对象", "📷 拍下现场", "🖼️ 附上图片"])
 with input_tab:
-    query_item = st.text_input("输入物品", placeholder="例如：葡萄、百合、毛线、巧克力", key="query_item_input")
+    query_item = st.text_input("输入要分析的对象", placeholder="例如：葡萄、百合、毛线、巧克力", key="query_item_input")
 with camera_tab:
-    camera_file = st.camera_input("拍下要查询的物品", key="camera_input")
+    camera_file = st.camera_input("拍下这次发现的对象", key="camera_input")
     if camera_file:
         recognize_uploaded_image(camera_file, "camera")
 with upload_tab:
-    upload_file = st.file_uploader("上传物品照片", type=["jpg", "jpeg", "png", "webp"], key="upload_input")
+    upload_file = st.file_uploader("附上一张相关图片", type=["jpg", "jpeg", "png", "webp"], key="upload_input")
     if upload_file:
         st.image(upload_file, use_container_width=True)
         recognize_uploaded_image(upload_file, "upload")
 
 if st.session_state.get("vision_error"):
     st.error(st.session_state["vision_error"])
-    st.caption("图片识别失败不影响查询，你仍可在上方“输入名称”中手动输入物品。")
+    st.caption("图片识别失败不影响事件提交，你仍可手动输入要分析的对象。")
 
 recognized_data = st.session_state.get("current_vision_result")
 if recognized_data:
     recognized = VisionResult.model_validate(recognized_data)
-    st.subheader("图片识别结果")
+    st.subheader("本次事件中的识别结果")
     c1, c2 = st.columns(2)
-    c1.metric("物品名称", recognized.item_name)
+    c1.metric("识别对象", recognized.item_name)
     c2.metric("置信度", f"{recognized.confidence:.0%}")
     st.write(f"**标准名称：** {recognized.normalized_name}")
     st.write(f"**客观描述：** {recognized.description or '无'}")
@@ -160,20 +177,41 @@ if recognized_data:
     st.write(f"**不确定性：** {recognized.uncertainty or '无'}")
     if recognized.confidence < 0.65:
         st.warning("识别置信度较低，请仔细核对并修改名称后再查询。")
-    query_item = st.text_input("确认或修改物品名称", key="recognized_name_input")
+    query_item = st.text_input("确认或修改本次事件中的对象", key="recognized_name_input")
 
 if species not in ["猫", "狗"]:
     st.warning("当前高可信本地资料先覆盖猫和狗；其他物种可以运行，但会更多依赖一般性推断并降低置信度。")
 
-analysis_label = "确认并查询" if recognized_data else "开始宠物视角分析"
+if query_item.strip():
+    with st.container(border=True):
+        st.markdown("#### 提交前确认")
+        st.write("**事件类型：** 物品事件")
+        st.write(f"**分析对象：** {query_item.strip()}")
+        if event_note.strip():
+            st.write(f"**事件描述：** {event_note.strip()}")
+        if event_question.strip():
+            st.write(f"**关注问题：** {event_question.strip()}")
+
+analysis_label = "提交事件并分析"
 if st.button(analysis_label, type="primary", use_container_width=True, disabled=not bool(query_item.strip())):
     final_item = query_item.strip()
     vision_for_analysis = VisionResult.model_validate(recognized_data) if recognized_data else None
     with st.spinner("正在结合宠物画像和知识库分析……"):
         result = evaluate_item(final_item, profile, vision_result=vision_for_analysis,
                                image_hash=st.session_state.get("current_vision_fingerprint"))
-        save_result(result, profile)
+        event = save_event(
+            result,
+            profile,
+            input_text=final_item,
+            event_note=event_note.strip(),
+            question=event_question.strip(),
+            recognized_item=recognized.item_name if recognized_data else final_item,
+            final_item=final_item,
+            user_corrected=bool(recognized_data and final_item != recognized.item_name),
+            image_attached=bool(recognized_data),
+        )
     st.session_state["latest_result"] = result.model_dump()
+    st.session_state["latest_event"] = event.model_dump(exclude={"result", "profile"})
 
 if "latest_result" in st.session_state:
     from app.models import SafetyResult
@@ -182,6 +220,9 @@ if "latest_result" in st.session_state:
         "verified_local": "本地资料已验证", "mixed": "本地资料 + AI 推断",
         "general_inference": "AI 一般性推断", "insufficient": "信息不足",
     }
+    st.subheader("本次事件的分析结果")
+    latest_event = st.session_state.get("latest_event") or {}
+    st.caption(f"物品事件 · {latest_event.get('created_at', '刚刚')}")
     st.markdown(f"<div class='risk-card'><b>{result.risk_level}</b> · 置信度 {result.confidence}%<br><h3>{result.normalized_item}</h3>{result.quick_summary}</div>", unsafe_allow_html=True)
     st.caption(f"证据等级：{evidence_labels[result.evidence_level]} · 类别：{result.item_category}")
     if result.evidence_level == "general_inference":
