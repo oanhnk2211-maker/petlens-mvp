@@ -151,6 +151,7 @@ def test_new_object_event_persists_metadata_and_legacy_rows_remain_readable(tmp_
         final_item="麻辣蛤",
         user_corrected=True,
         image_attached=True,
+        analysis_context={"current_query": {"question": "这次接触需要担心吗？"}},
     )
 
     events = storage.load_event_history()
@@ -158,15 +159,16 @@ def test_new_object_event_persists_metadata_and_legacy_rows_remain_readable(tmp_
     assert len(events) == 1
     event = events[0]
     assert event.event_id == saved.event_id
-    assert event.event_schema_version == 1
+    assert event.event_schema_version == 2
     assert event.is_legacy is False
-    assert event.event_type == "object"
+    assert event.event_type == "event"
     assert event.event_note == "猫刚刚可能碰到了包装里的食物。"
     assert event.question == "这次接触需要担心吗？"
     assert event.recognized_item == "海鲜罐头"
     assert event.final_item == "麻辣蛤"
     assert event.user_corrected is True
     assert event.image_attached is True
+    assert event.analysis_context["current_query"]["question"] == "这次接触需要担心吗？"
 
 
 def test_json_export_removes_secrets_and_base64():

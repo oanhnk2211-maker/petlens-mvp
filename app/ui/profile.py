@@ -36,6 +36,7 @@ def render_profile(navigate: Callable[[str], None]) -> None:
     with st.container(border=True):
         st.markdown(f"### {profile.name or '我的小猫'}")
         st.write(f"**物种：** {profile.species}")
+        st.write(f"**性别：** {profile.sex}")
         st.write(f"**年龄：** {f'{profile.age_years:g} 岁' if profile.age_years is not None else '未填写'}")
         st.write(f"**体重：** {f'{profile.weight_kg:g} kg' if profile.weight_kg is not None else '未填写'}")
         st.write(f"**补充信息：** {profile.notes or '未填写'}")

@@ -9,10 +9,13 @@ class MockTextProvider(TextProvider):
     def __init__(self, result: AnalysisResult | dict | Exception):
         self.result = result
         self.calls = 0
+        self.last_context: dict | None = None
 
     def analyze_item(self, item_name: str, normalized_name: str, pet_profile: PetProfile,
-                     local_matches: list[dict], vision_result: VisionResult | None = None) -> AnalysisResult:
+                     local_matches: list[dict], vision_result: VisionResult | None = None,
+                     analysis_context: dict | None = None) -> AnalysisResult:
         self.calls += 1
+        self.last_context = analysis_context
         if isinstance(self.result, Exception):
             raise self.result
         return AnalysisResult.model_validate(self.result)

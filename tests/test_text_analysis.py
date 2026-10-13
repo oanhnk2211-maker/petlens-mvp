@@ -109,3 +109,18 @@ def test_qwen_request_options(monkeypatch):
     provider.analyze_item("蒙古包", "蒙古包", PetProfile(), [])
     assert captured["response_format"] == {"type": "json_object"}
     assert captured["extra_body"] == {"enable_thinking": False}
+
+
+def test_selected_event_context_reaches_text_provider():
+    provider = MockTextProvider(analysis())
+    evaluate_item(
+        "猫",
+        PetProfile(species="猫"),
+        text_provider=provider,
+        event_note="刚吃完罐头后舔舌头",
+        question="需要注意什么？",
+        recent_context=[{"source": "user_recent_note", "label": "最近食欲正常"}],
+    )
+    assert provider.last_context["current_event"]["description"] == "刚吃完罐头后舔舌头"
+    assert provider.last_context["current_event"]["question"] == "需要注意什么？"
+    assert provider.last_context["recent_events"][0]["label"] == "最近食欲正常"

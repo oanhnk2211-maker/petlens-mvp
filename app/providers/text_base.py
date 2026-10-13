@@ -19,5 +19,6 @@ class TextProvider(ABC):
         pet_profile: PetProfile,
         local_matches: list[dict],
         vision_result: VisionResult | None = None,
+        analysis_context: dict | None = None,
     ) -> AnalysisResult:
         raise NotImplementedError

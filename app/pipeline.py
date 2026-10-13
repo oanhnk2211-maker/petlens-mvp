@@ -163,14 +163,23 @@ def _from_model(item: str, profile: PetProfile, analysis: AnalysisResult, matche
 
 
 def evaluate_item(item: str, profile: PetProfile, *, vision_result: VisionResult | None = None,
-                  text_provider: TextProvider | None = None, image_hash: str | None = None) -> SafetyResult:
+                  text_provider: TextProvider | None = None, image_hash: str | None = None,
+                  event_note: str = "", question: str = "",
+                  recent_context: list[dict] | None = None) -> SafetyResult:
     matches = find_local_matches(item, profile.species)
     provider = text_provider or QwenTextProvider()
     normalized = vision_result.normalized_name if vision_result else (matches[0]["item"] if matches else item)
     request_id = str(uuid.uuid4())
     model = str(getattr(provider, "model", provider.__class__.__name__))
     try:
-        analysis = provider.analyze_item(item, normalized, profile, matches, vision_result)
+        analysis_context = {
+            "current_event": {"description": event_note, "question": question},
+            "recent_events": recent_context or [],
+        }
+        analysis = provider.analyze_item(
+            item, normalized, profile, matches, vision_result,
+            analysis_context=analysis_context,
+        )
         return _from_model(item, profile, analysis, matches, model=model, request_id=request_id,
                            vision_result=vision_result, image_hash=image_hash)
     except TextAnalysisError as exc:

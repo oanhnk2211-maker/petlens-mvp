@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -13,6 +13,7 @@ SourceType = Literal["verified_database", "trusted_web", "model_inference", "vis
 class PetProfile(BaseModel):
     name: str = "我的宠物"
     species: Species = "猫"
+    sex: Literal["未知", "公", "母"] = "未知"
     age_years: float | None = Field(default=None, ge=0, le=100)
     weight_kg: float | None = Field(default=None, gt=0, le=500)
     notes: str = ""
@@ -193,5 +194,6 @@ class HistoryEvent(BaseModel):
     final_item: str = ""
     user_corrected: bool = False
     image_attached: bool = False
+    analysis_context: dict[str, Any] = Field(default_factory=dict)
     result: SafetyResult
     profile: PetProfile

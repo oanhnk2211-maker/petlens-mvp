@@ -57,13 +57,14 @@ def save_event(
     final_item: str = "",
     user_corrected: bool = False,
     image_attached: bool = False,
+    analysis_context: dict | None = None,
 ) -> HistoryEvent:
     """Persist the first event type while keeping result/profile columns compatible."""
     created_at = datetime.now(timezone.utc).isoformat()
     event = HistoryEvent(
         event_id=f"event:{uuid4().hex}",
-        event_type="object",
-        event_schema_version=1,
+        event_type="event",
+        event_schema_version=2,
         is_legacy=False,
         created_at=created_at,
         item_name=result.normalized_item,
@@ -77,6 +78,7 @@ def save_event(
         final_item=final_item or result.normalized_item,
         user_corrected=user_corrected,
         image_attached=image_attached,
+        analysis_context=analysis_context or {},
         result=result,
         profile=profile,
     )

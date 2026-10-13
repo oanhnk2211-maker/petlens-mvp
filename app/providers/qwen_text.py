@@ -21,6 +21,7 @@ SYSTEM_PROMPT = """你是 PetLens 的宠物物品风险分析模块。输出必�
 不得伪造来源、机构、网址、论文或研究；sources 只能逐字使用输入中的本地来源，没有本地来源必须为空。
 不确定时降低 confidence 并解释不确定点。食品、药品、植物等未知高风险对象应更谨慎。
 普通家具、建筑和环境设施应区分物品整体与炉火、绳索、尖锐件、松散小件等具体风险，不要机械输出“禁止宠物接触或食用”。没有依据时说“没有发现明确的直接毒性依据”，不能说“绝对安全”。只有名称含糊到无法判断具体是什么时才使用 insufficient。
+输入中的 current_event 是本次用户刚刚提供的事件事实和问题，recent_events 是用户选择带入的近期上下文。必须先区分用户观察、图片观察、历史中的上次模型摘要和你的推断；历史摘要不是已验证事实。回答必须直接回应本次问题，并引用相关事件事实。若识别对象本身是宠物或描述的是行为/状态，不要机械套用误食毒性或玩具风险模板，应优先给出观察重点、可能解释、何时需要专业人士介入和不确定性；雷达维度不适用时要明确说明。
 返回 JSON 字段：item_name, overall_risk, confidence(0到1), evidence_level(verified_local/mixed/general_inference/insufficient), item_category, scores{food,toxicity,toy,physical_danger,interest}(均0到100), tags, summary, details, exceptions, advice, emergency_signs, sources。"""
 
 
@@ -76,12 +77,14 @@ class QwenTextProvider(TextProvider):
         return TextAnalysisError("文本分析服务暂时不可用，已使用本地结果。")
 
     def analyze_item(self, item_name: str, normalized_name: str, pet_profile: PetProfile,
-                     local_matches: list[dict], vision_result: VisionResult | None = None) -> AnalysisResult:
+                     local_matches: list[dict], vision_result: VisionResult | None = None,
+                     analysis_context: dict | None = None) -> AnalysisResult:
         vision_text = vision_result.model_dump(include={"item_name", "normalized_name", "visible_text",
                                                         "candidate_names", "confidence", "description", "uncertainty"}) if vision_result else None
         context = {"item_name": item_name, "normalized_name": normalized_name,
                    "pet_profile": pet_profile.model_dump(), "local_knowledge": local_matches,
-                   "vision_text_fields": vision_text, "required_json_schema": AnalysisResult.model_json_schema()}
+                   "vision_text_fields": vision_text, "user_context": analysis_context or {},
+                   "required_json_schema": AnalysisResult.model_json_schema()}
         prompt = "请根据以下内容输出完整 JSON：\n" + json.dumps(context, ensure_ascii=False)
         messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}]
         raw = self._request(messages)
