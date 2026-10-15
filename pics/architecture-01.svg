@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="1080" viewBox="0 0 980 1080" style="background-color: #F8FAFC; font-family: 'PingFang SC', 'Microsoft YaHei', 'Inter', 'Segoe UI', sans-serif;">
+  <defs>
+    <marker id="arrow-pet" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94A3B8" />
+    </marker>
+    <filter id="shadow-pet" x="-5%" y="-5%" width="115%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.05" />
+    </filter>
+  </defs>
+
+  <!-- 标题 -->
+  <text x="490" y="40" fill="#0F172A" font-size="24" font-weight="bold" text-anchor="middle">PetLens 宠物视角多模态分析引擎</text>
+  <text x="490" y="66" fill="#475569" font-size="14" text-anchor="middle">多模态识别 · 用户修正 · 上下文增强 · 模型推理 · 历史归档</text>
+
+  <!-- ===== 第一层：输入层 ===== -->
+  <!-- 框1：事件问题 / 事件描述 -->
+  <rect x="150" y="100" width="240" height="70" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="270" y="135" fill="#1E3A8A" font-size="16" font-weight="bold" text-anchor="middle">事件问题 / 事件描述</text>
+  <text x="270" y="155" fill="#64748B" font-size="12" text-anchor="middle">主诉与背景</text>
+
+  <!-- 框2：图片材料 -->
+  <rect x="590" y="100" width="240" height="70" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="710" y="135" fill="#1E3A8A" font-size="16" font-weight="bold" text-anchor="middle">图片材料</text>
+  <text x="710" y="155" fill="#64748B" font-size="12" text-anchor="middle">图片上传 / 手机拍照</text>
+
+  <!-- ===== 第二层：多模态识别与修正 ===== -->
+  <!-- 框3：多模态识别 -->
+  <rect x="590" y="220" width="240" height="60" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="710" y="255" fill="#1E3A8A" font-size="16" font-weight="bold" text-anchor="middle">多模态识别</text>
+
+  <!-- 框4：用户修正 -->
+  <rect x="870" y="220" width="90" height="60" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" stroke-dasharray="4,3" filter="url(#shadow-pet)" />
+  <text x="915" y="255" fill="#1E3A8A" font-size="14" font-weight="bold" text-anchor="middle">用户修正</text>
+
+  <!-- 箭头与虚线 -->
+  <path d="M 710 170 L 710 220" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 870 250 L 830 250" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-pet)"/>
+
+  <!-- ===== 第三层：上下文聚合层 ===== -->
+  <!-- 大虚线框 -->
+  <rect x="90" y="340" width="800" height="150" rx="10" fill="#F8FAFC" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="6,4" filter="url(#shadow-pet)" />
+  <text x="490" y="365" fill="#1E3A8A" font-size="13" font-weight="bold" text-anchor="middle">多源上下文增强（三者共同被模型增强判断）</text>
+
+  <!-- 框5：本地知识匹配 -->
+  <rect x="130" y="380" width="220" height="85" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="240" y="410" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">本地知识匹配</text>
+  <text x="240" y="435" fill="#64748B" font-size="12" text-anchor="middle">结构化条目匹配</text>
+  <text x="240" y="453" fill="#64748B" font-size="12" text-anchor="middle">预设规则</text>
+
+  <!-- 框6：宠物画像 -->
+  <rect x="380" y="380" width="220" height="85" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="490" y="410" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">宠物画像</text>
+  <text x="490" y="435" fill="#64748B" font-size="12" text-anchor="middle">年龄 / 物种 / 健康</text>
+  <text x="490" y="453" fill="#64748B" font-size="12" text-anchor="middle">行为特征</text>
+
+  <!-- 框7：近期上下文和历史 -->
+  <rect x="630" y="380" width="220" height="85" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="740" y="410" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">近期上下文 / 历史</text>
+  <text x="740" y="435" fill="#64748B" font-size="12" text-anchor="middle">近期对话</text>
+  <text x="740" y="453" fill="#64748B" font-size="12" text-anchor="middle">用户主动添加的历史</text>
+
+  <!-- 修改点：输入层指向大框顶部的连线，不再贯穿大框 -->
+  <!-- 箭头：事件描述 → 上下文增强大框顶部 -->
+  <path d="M 270 170 L 270 340" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <!-- 箭头：多模态识别 → 上下文增强大框顶部 -->
+  <path d="M 710 280 L 710 340" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+
+  <!-- 内部三模块汇聚到模型增强判断的连线 -->
+  <path d="M 240 465 L 240 495 L 490 495 L 490 520" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 490 465 L 490 520" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 740 465 L 740 495 L 490 495" fill="none" stroke="#94A3B8" stroke-width="2" />
+
+  <!-- ===== 第四层：核心判断 ===== -->
+  <rect x="340" y="520" width="300" height="50" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2" filter="url(#shadow-pet)" />
+  <text x="490" y="550" fill="#1E3A8A" font-size="17" font-weight="bold" text-anchor="middle">模型增强判断并结构化输出</text>
+
+  <!-- 分叉连线 -->
+  <path d="M 490 570 L 490 600 L 240 600 L 240 640" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 490 570 L 490 640" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 490 570 L 490 600 L 750 600 L 750 640" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+
+  <!-- ===== 第五层：输出层 ===== -->
+  <!-- 框8：概括性分析结果 -->
+  <rect x="140" y="640" width="200" height="60" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="240" y="675" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">概括性分析结果</text>
+
+  <!-- 框9：处置建议 -->
+  <rect x="390" y="640" width="200" height="60" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="490" y="675" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">处置建议</text>
+
+  <!-- 框10：详细判断（含子模块） -->
+  <rect x="640" y="640" width="220" height="140" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="750" y="665" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">详细判断</text>
+  
+  <rect x="655" y="680" width="190" height="25" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1" />
+  <text x="750" y="697" fill="#475569" font-size="12" text-anchor="middle">对历史的更多展开分析</text>
+  
+  <rect x="655" y="712" width="190" height="25" rx="4" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1" />
+  <text x="750" y="729" fill="#475569" font-size="12" text-anchor="middle">雷达图</text>
+  
+  <rect x="655" y="744" width="190" height="25" rx="4" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1" />
+  <text x="750" y="761" fill="#B91C1C" font-size="12" text-anchor="middle">紧急意外情况</text>
+
+  <!-- 箭头：三路汇聚到保留证据 -->
+  <path d="M 240 700 L 240 845 L 390 845" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 490 700 L 490 820" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 750 780 L 750 845 L 590 845" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+
+  <!-- ===== 第六层：历史归档与闭环 ===== -->
+  <!-- 框11：保留证据 -->
+  <rect x="390" y="820" width="200" height="50" rx="8" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="490" y="850" fill="#1E3A8A" font-size="15" font-weight="bold" text-anchor="middle">保留证据</text>
+
+  <!-- 框12：历史 -->
+  <rect x="390" y="900" width="200" height="50" rx="8" fill="#EFF6FF" stroke="#60A5FA" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="490" y="930" fill="#1E3A8A" font-size="16" font-weight="bold" text-anchor="middle">历史</text>
+
+  <!-- 箭头 -->
+  <path d="M 490 870 L 490 900" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+  <path d="M 490 950 L 490 980" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#arrow-pet)"/>
+
+  <!-- 虚线闭环反馈：历史 -> 事件问题 -->
+  <path d="M 390 925 L 80 925 L 80 135 L 150 135" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-pet)"/>
+  <text x="75" y="530" fill="#64748B" font-size="12" text-anchor="middle" transform="rotate(-90 75 530)">用于下一次判断（数据闭环）</text>
+
+  <!-- 框13：SQLite -->
+  <rect x="340" y="980" width="300" height="50" rx="8" fill="#EFF6FF" stroke="#60A5FA" stroke-width="1.5" filter="url(#shadow-pet)" />
+  <text x="490" y="1010" fill="#1E3A8A" font-size="16" font-weight="bold" text-anchor="middle">SQLite 历史归档</text>
+
+</svg>
